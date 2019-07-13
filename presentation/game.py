@@ -14,9 +14,9 @@
 # limitations under the License.
 
 """A small QA game with different categories."""
-import aiy.audio
-import aiy.cloudspeech
-import aiy.voicehat
+from aiy.cloudspeech import CloudSpeechClient
+from aiy.voice import tts
+from aiy.board import Board, Led
 import random
 
 
@@ -40,7 +40,7 @@ def game_questions():
 
 
 def train_recognizer(recognizer, category):
-    recognizer.expect_hotword(category)
+    recognizer.recognize(hint_phrases=category)
     questions_and_answers = game_questions()[category]
     for question, answer in questions_and_answers:
         recognizer.expect_phrase(question)
@@ -49,15 +49,12 @@ def train_recognizer(recognizer, category):
 
 
 def main():
-    recognizerGame = aiy.cloudspeech.get_recognizer()
-    recognizerGame.expect_hotword(['Maths', 'Geography'])
-    recognizer = aiy.cloudspeech.get_recognizer()
-    recognizer.expect_hotword(['game', 'play'])
+    recognizerGame = CloudSpeechClient()
+    recognizer = CloudSpeechClient()
 
-    button = aiy.voicehat.get_button()
-    led = aiy.voicehat.get_led()
-    aiy.audio.get_recorder().start()
-
+    board = Board()
+    button = board.button
+    led = board.led
     train_recognizer(recognizer, 'Maths')
     
     game_categories = game_questions().keys()
@@ -67,54 +64,54 @@ def main():
         print('Press the button and speak')
         button.wait_for_press()
         print('Listening...')
-        text = recognizer.recognize()
+        text = recognizer.recognize(hint_phrases=['game', 'play'])
 
         if not text:
             print('Sorry, I did not hear you.')
-            aiy.audio.say('Sorry, I did not hear you.')
+            tts.say('Sorry, I did not hear you.')
 
         else:
             print('You said "', text, '"')
             if 'a game' in text:
-                led.set_state(aiy.voicehat.LED.ON)
-                aiy.audio.say('Welcome to do greatest game ever! The available categories are: {0}. Press the button and pick one!'.format(', '.join(game_categories)))
+                led.state=Led.ON
+                tts.say('Welcome to do greatest game ever! The available categories are: {0}. Press the button and pick one!'.format(', '.join(game_categories)))
                 button.wait_for_press()
                 print('Listening for game...')
-                game = recognizerGame.recognize()
+                game = recognizerGame.recognize(hint_phrases=['Maths', 'Geography'])
                 print(game)
                 if not game:
                     print('Sorry, Game I did not hear you.')
-                    aiy.audio.say('Sorry, Game I did not hear you.')
+                    tts.say('Sorry, Game I did not hear you.')
                 elif 'Maths' in game:
-                    led.set_state(aiy.voicehat.LED.ON)
-                    aiy.audio.say('Get ready for your Maths questions! Once you have the answer, press the button and speak.')
+                    led.state = Led.ON
+                    tts.say('Get ready for your Maths questions! Once you have the answer, press the button and speak.')
                     questions_and_answers = dict(game_questions()['Maths'])
                     questions = questions_and_answers.keys()
                     random.shuffle(questions)
 
                     for question in questions[:5]:  # first 5 questions after randomly shuffling
-                        aiy.audio.say(question)
-                        led.set_state(aiy.voicehat.LED.OFF)
+                        tts.say(question)
+                        led.state = Led.OFF
 
                         print('Press the button and speak')
                         button.wait_for_press()
                         recorded_text = recognizer.recognize()
                         answer = questions_and_answers[question]
                         if answer in recorded_text:
-                            led.set_state(aiy.voicehat.LED.ON)
-                            aiy.audio.say('Well done! %s is the correct answer! You score one point!', answer)
+                            led.state=Led.ON
+                            tts.say('Well done! %s is the correct answer! You score one point!', answer)
                             total_score += 1
                         elif answer not in answer:
-                            aiy.audio.say('Sorry, the answer I was looking for is %s. No points for you this time!', answer)
+                            tts.say('Sorry, the answer I was looking for is %s. No points for you this time!', answer)
 
                 elif 'Geography' in game:
                     return
 
             elif 'score' in text:
                 if total_score > 0:
-                    aiy.audio.say('Your have scored %s points. Well done!', total_score)
+                    tts.say('Your have scored %s points. Well done!', total_score)
                 else:
-                    aiy.audio.say('So sad, your score is %s points. Don\'t give up!', total_score)
+                    tts.say('So sad, your score is %s points. Don\'t give up!', total_score)
 
             elif 'goodbye' in text:
                 break

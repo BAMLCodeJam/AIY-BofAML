@@ -1,18 +1,18 @@
-import aiy.audio
-import aiy.cloudspeech
-import aiy.voicehat
+from aiy.cloudspeech import CloudSpeechClient
+from aiy.voice import tts
+from aiy.board import Board, Led
 
-led = aiy.voicehat.get_led()
-led.set_state(aiy.voicehat.LED.ON)
+board = Board()
+led = board.led
+led.state=Led.ON
 
-recognizer = aiy.cloudspeech.get_recognizer()
+client = CloudSpeechClient()
 
-aiy.audio.say('Listening...')
-aiy.audio.get_recorder().start()
+tts.say('Listening...')
 
 while True:
-    text = recognizer.recognize()
+    text = client.recognize()
     if text and 'blink' in text:
-        led.set_state(aiy.voicehat.LED.BLINK)
+        led.state=Led.PULSE_QUICK
     else:
         print(text)

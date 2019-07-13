@@ -1,14 +1,13 @@
-import aiy.audio
-import aiy.cloudspeech
-
-recognizer = aiy.cloudspeech.get_recognizer()
-aiy.audio.get_recorder().start()
+from aiy.cloudspeech import CloudSpeechClient
+from aiy.voice import tts
+client = CloudSpeechClient()
 
 print('Listening to your name...')
-myName = recognizer.recognize()
-print('I understood your name is ' + myName)
+myName = client.recognize()
 
-aiy.audio.say('Hello '+ myName)
+if myName:
+    print('I understood your name is ' + myName)
+    tts.say('Hello '+ myName)
 
 
 

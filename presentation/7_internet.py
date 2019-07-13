@@ -1,5 +1,5 @@
 import requests
-import aiy.cloudspeech
+from aiy.voice import tts
 
 WHEATHER_KEY = "ea600b8da132c35933164e823ef82814"
 
@@ -14,5 +14,5 @@ city = internetResult['name']
 country = internetResult['sys']['country']
 weather = internetResult['weather'][0]['main']
 
-aiy.audio.say('The weather in {0} is {1}'.format(city, weather))
-aiy.audio.say('The temperature is currently {0} degrees'.format(temp))
+tts.say('The weather in {0} is {1}'.format(city, weather))
+tts.say('The temperature is currently {0} degrees'.format(temp))

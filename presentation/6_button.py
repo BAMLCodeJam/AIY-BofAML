@@ -1,12 +1,11 @@
-import aiy.audio
-import aiy.cloudspeech
-import aiy.voicehat
+from aiy.voice import tts
+from aiy.board import Board
 
-myButton = aiy.voicehat.get_button()
+myButton = Board().button
 
 while True:
     myButton.wait_for_press()
-    aiy.audio.say('This is tickling')
+    tts.say('This is tickling')
 
 
 
